@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>文多多 AiPPT 编辑器</title>
+    <script src="static/docmee-ui-sdk-iframe.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+      #container {
+        width: calc(100%);
+        height: calc(100%);
+        margin: 0 auto;
+        padding: 0;
+        box-shadow: 0 0 12px rgba(120, 120, 120, 0.3);
+        overflow: hidden;
+        background: linear-gradient(-157deg, #f57bb0, #867dea);
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 挂载iframe容器 -->
+    <div id="container"></div>
+  </body>
+  <script>
+    if (location.protocol == 'file:') {
+        alert('不支持 file 协议直接访问，请启动 http 服务访问！\n\n启动命令：npm run start')
+    }
+
+    // 文多多AiPPT
+    // 官网 https://docmee.cn
+    // 开放平台 https://docmee.cn/open-platform/api#创建接口-token
+    var token = '' // TODO 填写你的 token
+    var pptId = '' // TODO 填写你的 pptId
+    var animation = true // TODO 是否开启动画（建议生成PPT第一次展示开启动画，后续进入编辑则不开启）
+
+    if (!token || !pptId) {
+      alert('请填写 token 和 pptId');
+    }
+
+    // 初始化 UI iframe
+    const docmeeUI = new DocmeeUI({
+      pptId: pptId,
+      token: token, // token
+      animation: animation, // 是否开启动画
+      container: document.querySelector('#container'), // 挂载 iframe 的容器
+      page: 'editor', // 'editor' 编辑页（需要传pptId字段）
+      lang: 'zh', // 国际化
+      mode: 'light', // light 亮色模式, dark 暗色模式
+      isMobile: false, // 移动端模式
+      background: 'linear-gradient(-157deg,#f57bb0, #867dea)', // 自定义背景
+      padding: '40px 20px 0px',
+      onMessage(message) {
+        console.log(message)
+        if (message.type === 'beforeDownload') {
+          // 自定义下载PPT的文件名称
+          const { id, subject } = message.data
+          return `PPT_${subject}.pptx`
+        } else if (message.type === 'invalid-token') {
+          // 在token失效时触发
+          console.log('token 认证错误')
+          // 更换新的 token
+          // docmeeUI.updateToken(newToken)
+        }
+      }
+    })
+  </script>
+</html>
